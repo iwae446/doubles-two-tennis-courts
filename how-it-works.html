@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>組み合わせの決め方 | ダブルス組み合わせジェネレーター</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#0F1B14;
+    --surface:#17271C;
+    --surface-alt:#1E3325;
+    --line:rgba(243,246,236,0.10);
+    --text:#F3F6EC;
+    --text-muted:#8FA091;
+    --ball:#D7E85B;
+    --court-b:#4FA3B8;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  .back{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:var(--text-muted);
+    text-decoration:none;
+    font-size:13px;
+    margin-bottom:20px;
+  }
+  .back:hover{ color:var(--ball); }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-size:24px;
+    line-height:1.4;
+    margin:0 0 6px;
+  }
+  .lead{
+    color:var(--text-muted);
+    font-size:14px;
+    margin:0 0 28px;
+    padding-bottom:20px;
+    border-bottom:1px solid var(--line);
+  }
+  h2{
+    font-family:'Oswald',sans-serif;
+    font-size:17px;
+    margin:34px 0 12px;
+    padding-top:8px;
+  }
+  p{ font-size:14.5px; margin:0 0 14px; }
+  .quote{
+    background:var(--surface);
+    border-left:3px solid var(--ball);
+    border-radius:0 10px 10px 0;
+    padding:12px 16px;
+    font-size:14px;
+    color:var(--ball);
+    font-weight:600;
+    margin:14px 0;
+  }
+  ol, ul{ font-size:14.5px; padding-left:1.3em; margin:0 0 14px; }
+  li{ margin-bottom:6px; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    margin:14px 0 20px;
+    background:var(--surface);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  th, td{
+    text-align:left;
+    padding:10px 12px;
+    border-bottom:1px solid var(--line);
+  }
+  th{
+    background:var(--surface-alt);
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:.02em;
+  }
+  .legend-row{ display:flex; align-items:center; gap:8px; }
+  .dot{ width:10px;height:10px;border-radius:3px;display:inline-block;flex:0 0 auto; }
+  .dot-partner{ background:#E8A33D; }
+  .dot-opponent{ background:#B565D8; }
+  .dot-wait{ background:#E0524F; }
+  .summary-box{
+    margin-top:32px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px;
+    font-size:14px;
+    color:var(--text-muted);
+  }
+  .summary-box b{ color:var(--text); }
+  hr{ border:none; border-top:1px solid var(--line); margin:28px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="index.html">← アプリに戻る</a>
+
+  <h1>このアプリは、どうやって組み合わせを決めているのか</h1>
+  <p class="lead">
+    「なんでまた自分だけ待機なの?」「さっきもこの人とパートナーだったのに」——
+    サークルや練習会の組み合わせでよくある不満を、できるだけ減らすために作られたアプリです。
+    専門的な話は抜きにして、考え方だけをシンプルに説明します。
+  </p>
+
+  <h2>目指していること(優先順位つき)</h2>
+  <p>組み合わせを決めるとき、次の3つを<b>この順番で</b>大事にしています。</p>
+  <ol>
+    <li><b>試合数をなるべく揃える</b>(一番大事)。誰か1人だけ多い/少ない、という不公平が起きないようにします。</li>
+    <li><b>待機がなるべく連続しないようにする</b>。1回待機したら、次はできるだけ優先的に試合に出られるようにします。</li>
+    <li><b>パートナー・対戦相手をなるべくかぶらせない</b>。同じ人とばかり組んだり対戦したりしないよう、色々な人と回るようにします。</li>
+  </ol>
+  <p>
+    大事なのは、この優先順位が<b>上から順に絶対</b>だということです。「重複を避けるために誰かの試合数を犠牲にする」ということは絶対にしません。公平性が最優先で、重複回避はその範囲内でできる限り頑張る、というスタンスです。
+  </p>
+
+  <h2>どうやって「誰が出るか」を決めているか</h2>
+  <p>毎試合、こんな考え方で8人を選んでいます。</p>
+  <div class="quote">
+    「一番試合数が少ない人」から優先的に選ぶ。もし試合数が同じ人が並んだら、「一番長く待っている人」を優先する。
+  </div>
+  <p>
+    たとえば12人中、Aさんが2試合・Bさんが3試合こなしていたら、次はAさんが優先されます。これを毎試合繰り返すだけで、自然と「試合数の差は最大でも1」「連続で待機することはほぼない」という状態が保たれます。
+  </p>
+
+  <h2>どうやって「誰と組むか」を決めているか</h2>
+  <p>
+    出場する8人が決まったら、実は8人だけで「2コート×パートナー」の組み合わせ方は<b>300通り以上</b>あります。このアプリは、その300通りすべてを一瞬で見比べて、
+  </p>
+  <div class="quote">
+    「まだ一度も組んだことのないペア・対戦したことのない相手」がなるべく多くなる組み合わせ
+  </div>
+  <p>
+    を選びます。経験豊富な運営の人が「この2人はもう組んだことあるな…じゃあこっちの2人で」と頭の中で調整しているのと同じことを、機械が全パターン試して一番良いものを選んでいる、というイメージです。
+  </p>
+  <p>
+    さらに、<b>同じ2人が何度も繰り返し再会することは特に強く避けます。</b>仮にどうしても誰かと2回目の再会が避けられない状況でも、複数の人に1回ずつ薄く分散させる工夫をしています。
+  </p>
+
+  <h2>それでも重複が起きてしまうことがある理由</h2>
+  <p>
+    人数が少ないのに試合数が多いと、数学的にどうしても同じ人と再会せざるを得ない場面が出てきます。たとえば9人しかいないのに10試合もこなすと、1人あたり8〜9試合はプレーすることになりますが、パートナーになれる相手は最大でも「自分以外の8人」しかいません。これは組み合わせの工夫でどうにかできる話ではなく、<b>人数と試合数の掛け算で決まる、避けようのない上限</b>です。
+  </p>
+
+  <h2>画面に出てくる数字の見方</h2>
+  <table>
+    <tr><th>表示項目</th><th>意味</th></tr>
+    <tr><td>試合数の差</td><td>一番多い人と少ない人の差。0か1なら理想的です。</td></tr>
+    <tr><td>パートナーの再会<br>(総回数/深度)</td><td>総回数＝2回目以降で組んだ回数の合計。深度＝一番多く再会したペアが何回"超"再会したか。</td></tr>
+    <tr><td>対戦相手の再会<br>(総回数/深度)</td><td>考え方はパートナーと同じで、対戦相手バージョンです。</td></tr>
+    <tr><td>2連続待機<br>(総回数/深度)</td><td>2回以上連続で待機してしまった回数と、最長で何連続したかです。</td></tr>
+  </table>
+
+  <p>組み合わせ表の色分けも同じ考え方です。</p>
+  <p class="legend-row"><span class="dot dot-partner"></span> オレンジの番号 = パートナーとして再会</p>
+  <p class="legend-row"><span class="dot dot-opponent"></span> 紫の番号 = 対戦相手として再会</p>
+  <p class="legend-row"><span class="dot dot-wait"></span> 赤の番号 = 2回連続で待機</p>
+
+  <div class="summary-box">
+    一言でいうと、このアプリは「<b>試合数の公平さを絶対に守った上で、可能な限りいろいろな人と組み合わせる</b>」という、大会運営のベテランが頭の中でやっているであろう調整を、全パターン計算して機械的に再現しているだけです。魔法のような複雑なことはしておらず、やっていることは意外とシンプルです。
+  </div>
+
+  <a class="back" href="index.html" style="margin-top:28px;">← アプリに戻る</a>
+
+</div>
+</body>
+</html>
