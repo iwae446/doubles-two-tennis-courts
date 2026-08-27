@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+
+<!-- ★ここが今回の肝: このページが「本当のトップレベル」なので、
+     スマホChrome/Safariのピンチズームがこの viewport 指定に正しく従います -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>ダブルス組み合わせジェネレーター</title>
+
+<!-- PWA マニフェスト(Android Chromeの「ホーム画面に追加」で正しい名前・アイコンを出すため) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F1B14">
+
+<!-- iOS Safari 用(iOSはmanifest.jsonのアイコン/名前を読まないため個別指定が必要) -->
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="組み合わせ君">
+
+<!-- 通常ブラウザタブ用アイコン -->
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #0F1B14;
+    overflow: hidden;
+    overscroll-behavior: none; /* iOSのバウンス/引っ張り更新を抑制 */
+  }
+  #app-frame {
+    display: block;
+    border: 0;
+    width: 100vw;
+    height: 100vh;      /* 古いブラウザ向けフォールバック */
+    height: 100dvh;     /* アドレスバーの出没を考慮した実寸(対応ブラウザ) */
+  }
+  /* 読み込み中の簡易プレースホルダ */
+  #loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8FA091;
+    font-family: sans-serif;
+    font-size: 13px;
+    background: #0F1B14;
+  }
+
+  /* ---- ホーム画面追加バナー ---- */
+  #a2hs-banner {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: -200px;
+    z-index: 999;
+    background: #17271C;
+    border: 1px solid rgba(243,246,236,0.14);
+    border-radius: 16px;
+    padding: 14px 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    font-family: sans-serif;
+    color: #F3F6EC;
+    transition: bottom .35s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #a2hs-banner.show { bottom: 16px; }
+
+  .a2hs-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .a2hs-icon {
+    font-size: 22px;
+    line-height: 1;
+    flex: 0 0 auto;
+  }
+  .a2hs-text { flex: 1; }
+  .a2hs-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .a2hs-sub {
+    font-size: 11.5px;
+    color: #8FA091;
+    line-height: 1.5;
+  }
+  .a2hs-close {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    color: #8FA091;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+  }
+  #a2hs-btn {
+    display: none;
+    align-self: stretch;
+    background: #D7E85B;
+    color: #132014;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: sans-serif;
+    cursor: pointer;
+  }
+  #a2hs-ios {
+    display: none;
+    font-size: 11.5px;
+    color: #8FA091;
+    line-height: 1.6;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .a2hs-share-icon {
+    display: inline-block;
+    padding: 0 4px;
+    border: 1px solid #8FA091;
+    border-radius: 4px;
+    font-size: 10px;
+    margin: 0 2px;
+  }
+
+  /* ---- 「仕組みを見る」リンク ---- */
+  #how-link {
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top));
+    right: max(10px, env(safe-area-inset-right));
+    z-index: 998;
+    background: rgba(23,39,28,0.85);
+    color: #8FA091;
+    font-family: sans-serif;
+    font-size: 11px;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(243,246,236,0.14);
+    backdrop-filter: blur(4px);
+  }
+</style>
+</head>
+<body>
+
+  <div id="loading">読み込み中…</div>
+
+  <a id="how-link" href="how-it-works.html">ⓘ 仕組みを見る</a>
+
+  <!-- ---- ホーム画面追加の案内バナー(自動では追加されないことを明示) ---- -->
+  <div id="a2hs-banner">
+    <div class="a2hs-row">
+      <div class="a2hs-icon">🎾</div>
+      <div class="a2hs-text">
+        <div class="a2hs-title">ホーム画面に追加できます</div>
+        <div class="a2hs-sub">※自動では追加されません。ご自身の操作で追加してください。</div>
+      </div>
+      <button class="a2hs-close" id="a2hs-close" aria-label="閉じる">×</button>
+    </div>
+    <button id="a2hs-btn">ホーム画面に追加する</button>
+    <div id="a2hs-ios">
+      画面下の共有ボタン <span class="a2hs-share-icon">□↑</span> をタップ →
+      「ホーム画面に追加」を選んでください。
+    </div>
+  </div>
+
+  <!--
+    ★要設定★
+    下の src を、GASでデプロイしたWebアプリの「/exec」で終わるURLに書き換えてください。
+    例: https://script.google.com/macros/s/AKfycb.../exec
+  -->
+  <iframe
+    id="app-frame"
+    src="https://script.google.com/macros/s/【ここにデプロイIDを入れる】/exec"
+    title="ダブルス組み合わせジェネレーター"
+    allow="clipboard-write"
+    onload="document.getElementById('loading').style.display='none';">
+  </iframe>
+
+  <script>
+    (function () {
+      // すでにホーム画面から起動されている(＝インストール済み)場合は何も出さない
+      var isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+      if (isStandalone) return;
+
+      // 一度閉じた/追加した場合は次回から出さない
+      if (localStorage.getItem('a2hs_dismissed') === '1') return;
+
+      var banner = document.getElementById('a2hs-banner');
+      var btn = document.getElementById('a2hs-btn');
+      var iosMsg = document.getElementById('a2hs-ios');
+      var closeBtn = document.getElementById('a2hs-close');
+
+      var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS 13+対策
+
+      function dismiss(remember) {
+        if (remember) localStorage.setItem('a2hs_dismissed', '1');
+        banner.classList.remove('show');
+      }
+
+      closeBtn.addEventListener('click', function () { dismiss(true); });
+
+      if (isIOS) {
+        // iOS Safariには自動インストールの仕組みが無いため、手順を案内するのみ
+        iosMsg.style.display = 'block';
+        btn.style.display = 'none';
+        setTimeout(function () { banner.classList.add('show'); }, 600);
+      } else {
+        // Android Chrome等:ブラウザ標準のインストールプロンプトを呼び出せるようにする
+        var deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', function (e) {
+          e.preventDefault();
+          deferredPrompt = e;
+          btn.style.display = 'block';
+          iosMsg.style.display = 'none';
+          banner.classList.add('show');
+        });
+
+        btn.addEventListener('click', function () {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(function (choice) {
+            deferredPrompt = null;
+            dismiss(choice.outcome === 'accepted');
+          });
+        });
+
+        // メニューから手動でインストールした場合もバナーを片付ける
+        window.addEventListener('appinstalled', function () { dismiss(true); });
+      }
+    })();
+  </script>
+
+</body>
+</html>
